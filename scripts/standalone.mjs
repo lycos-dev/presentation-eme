@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+const html=await fs.readFile('dist/index.html','utf8');
+const script=html.match(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/);
+const style=html.match(/<link\b[^>]*href="([^"]+\.css)"[^>]*>/);
+if(!script||!style) throw new Error('Expected one Vite script and stylesheet');
+const js=await fs.readFile('dist/'+script[1].replace(/^\.\//,''),'utf8');
+const css=await fs.readFile('dist/'+style[1].replace(/^\.\//,''),'utf8');
+const out=html.replace(script[0],()=>'<script type="module">'+js.replace(/<\/script/gi,'<\\/script')+'</script>').replace(style[0],()=>'<style>'+css+'</style>');
+await fs.writeFile('OPEN_PRESENTATION.html',out);
+console.log('Created self-contained OPEN_PRESENTATION.html');
